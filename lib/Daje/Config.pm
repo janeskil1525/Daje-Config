@@ -45,7 +45,7 @@ use Mojo::File;
 # janeskil1525 E<lt>janeskil1525@gmail.comE<gt>
 #
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 has 'path';
 has 'type' => "config";
@@ -56,12 +56,12 @@ sub load($self, $filename = "") {
     unless (defined $filename and length($filename) > 0) {
         my $collection = $self->_load_list();
         $collection->each(sub($file, $num) {
-            $self->_load_config($config, $file);
+            $config = $self->_load_config($config, $file);
         });
     } else {
         my $path = $self->path();
         $path .= "/" unless (substr($path, -1) eq "/");
-        $self->_load_config($config, $path . $filename);
+        $config = $self->_load_config($config, $path . $filename);
     }
     return $config;
 }
@@ -70,6 +70,8 @@ sub _load_config($self, $config, $file) {
     my $path = Mojo::File->new($file);
     my $tag = substr($path->basename(), 0, index($path->basename(), '.json'));
     $config->{$tag} = from_json($path->slurp())->{$self->type()};
+
+    return $config;
 }
 
 # List of workflows in path (for internal use)
