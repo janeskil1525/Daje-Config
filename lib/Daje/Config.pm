@@ -49,7 +49,7 @@ use Mojo::File;
 # janeskil1525 E<lt>janeskil1525@gmail.comE<gt>
 #
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 
 has 'path';
 has 'type' => "config";
@@ -73,9 +73,19 @@ sub load($self, $filename = "") {
 sub _load_config($self, $config, $file) {
     my $path = Mojo::File->new($file);
     my $tag = substr($path->basename(), 0, index($path->basename(), '.json'));
-    $config->{$tag} = from_json($path->slurp())->{$self->type()};
+    $config->{$tag} = $self->load_json($file)->{$self->type()};
 
     return $config;
+}
+
+sub load_json($self, $file) {
+    my $context;
+    eval {
+        $context =  Mojo::File->new($file)->slurp;
+    };
+    die "load_json failed '$@'" if defined $@ and length($@) > 0;
+
+    return from_json($context);
 }
 
 # List of workflows in path (for internal use)
